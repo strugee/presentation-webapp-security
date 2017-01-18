@@ -191,8 +191,12 @@ html
 				h3 Keep stuff up-to-date
 				h3 #[code X-Frame-Options: DENY]
 				h3 #[code X-Content-Type-Options: nosniff]
+
+			section(data-bespoke-hash='tips')
+				h2 Tips II
 				h3 #[code X-Download-Options: noopen]
 				h3 #[code X-XSS-Protection: 1; mode=block] (reportedly buggy sometimes? Use a UA sniffer)
+				h3 #[code Referrer-Policy: same-origin] / #[code no-referrer]
 				h3 #[a(href='https://www.owasp.org/index.php/Main_Page') OWASP]
 
 			section
