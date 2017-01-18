@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>Web app security</title>
+		<link rel="stylesheet" type="text/css" href="build/build.css">
+	</head>
+	<body>
+		<article class="deck">
+			<section>
+				<h1>Web app security</h1>
+			</section>
+			<section>
+				<h2>AJ</h2>
+				<h3>he/him</h3>
+				<h3>Winter 2 batch</h3>
+				<h3>Security/privacy nerd</h3>
+			</section>
+			<section data-bespoke-hash="covering">
+				<h2>What we're covering</h2>
+				<h3>tl;dr: high-level vulnerabilities specific to webapps</h3>
+				<ul>
+					<li class="bullet">Injection vulnerabilities</li>
+					<li class="bullet">XSS attacks</li>
+					<li class="bullet">Password mishandling</li>
+					<li class="bullet">Cross Site Request Forgery</li>
+				</ul>
+			</section>
+			<section data-bespoke-hash="not-covering">
+				<h2>What we're <strong>not</strong> covering</h2>
+				<ul>
+					<li class="bullet">Common sense stuff</li>
+					<li class="bullet">Operational security (mostly)</li>
+					<li class="bullet">Cryptography (mostly)</li>
+					<li class="bullet">Social engineering</li>
+				</ul>
+			</section>
+			<section data-bespoke-hash="injctions">
+				<h2>Injection vulnerabilities</h2>
+				<h3>Rely on injecting text with special meaning into the app</h3>
+				<h3>Usual culprit: string concatenation</h3>
+				<h3>Most common type: SQL injections</h3>
+			</section>
+			<section>
+				<h2>Trivial example</h2>
+				<input id="searchInput" type="search" placeholder="Search..."><code>
+					<pre class="language-javascript">function searchFirstNames(req, res, next) {
+	var query = "SELECT 'firstname' FROM 'users' WHERE 'username' LIKE '%";
+	query += req.params.searchQuery + '%;';
+	db.query(query , function(response) {
+		// Do something
+	}
+}</pre></code>
+				<h3>Database sees: <code>SELECT 'firstname' FROM 'users' WHERE 'username' LIKE '%<span id="queryDisplay"></span>%'</code></h3>
+			</section>
+			<section><img src="http://imgs.xkcd.com/comics/exploits_of_a_mom.png" alt="xkcd about a SQL injection">
+				<cite><a href="https://www.xkcd.com/327/">"Exploits of a Mom" by Randall Munroe; CC-BY-NC 2.5</a></cite>
+			</section>
+			<section>
+				<h2>Solutions</h2>
+				<h3>Substitutions (use safe APIs)</h3>
+				<h3>Escaping</h3>
+				<h3>Frameworks don't necessarily do this for you</h3>
+			</section>
+			<section data-bespoke-hash="xss">
+				<h2>XSS attacks</h2>
+				<h3>XSS = Cross Site Scripting</h3>
+				<h3>Relies on injecting text interpreted specially by the browser</h3>
+				<h3>Almost always used to create a scripting context</h3>
+			</section>
+			<section>
+				<h2>Trivial example</h2>
+				<textarea id="postCompose" placeholder="Compose post"></textarea><a id="forgot" href="javascript:void(0);">I forgot :(</a><code>
+					<pre class="language-javascript">var postCompose = document.getElementById('postCompose'),
+    postDisplay = document.getElementById('postDisplay'),
+    postDisplayButton = document.getElementById('postDisplayButton');
+
+postDisplayButton.addEventListener('click', function(event) {
+	postDisplay.innerHTML = postCompose.value;
+});</pre></code>
+				<button id="postDisplayButton">Display post</button>
+				<div id="postDisplay"></div>
+			</section>
+			<section>
+				<h2>XSS solutions</h2>
+				<h3>Use an autoescaping template language</h3>
+				<h3>Use an escaping library (don't do it yourself)</h3>
+				<h3>Prefer well-known libraries</h3>
+				<h3>If not, whitelists</h3>
+				<h3><a href="https://content-security-policy.com/">Content Security Policy</a></h3>
+			</section>
+			<section data-bespoke-hash="passwords">
+				<h2>Password mishandling</h2>
+				<h3>Your password database <strong>will</strong> be compromised</h3>
+				<h3>The tl;dr is: use a well-established algorithm</h3>
+				<h3>We're going to talk about why anyway</h3>
+				<h3>Spoiler: at the end I'll say "don't use passwords"</h3>
+			</section>
+			<section>
+				<h2>Hashing</h2>
+				<h3>
+					<q>A hash function is any function that can be used to map data of arbitrary size to data of fixed size.</q>
+					<cite>-Wikipedia</cite>
+				</h3>
+				<h3>Takes in an arbitrary amount of data</h3>
+				<h3>Outputs a deterministic fixed-length string</h3>
+				<h3>Changes are obvious</h3>
+				<h3>Very hard to reverse</h3>
+			</section>
+			<section>
+				<h2>Password hashing</h2>
+				<h3>Hash passwords so the attacker has to guess</h3>
+				<h3>Use strong hashing functions that are <em>slooooooow</em></h3>
+				<h3>That means no (plain) SHA-1, no SHA-256, no MD5, etc.</h3>
+				<h3>Iteration</h3>
+			</section>
+			<section>
+				<h2>Salts</h2>
+				<h3>Plaintext values that are hashed with the password</h3>
+				<h3>Salting breaks rainbow tables</h3>
+			</section>
+			<section>
+				<h2>Just use an algorithm</h2>
+				<h3>PBKDF2 (conservative, generally SHA-256, vulnerable to ASICs/GPUs)</h3>
+				<h3>bcrypt (newer, Blowfish, vulnerable to FPGAs)</h3>
+				<h3>Both of these take care of salting</h3>
+			</section>
+			<section>
+				<h2>Do <em>not</em> use:</h2>
+				<h3>scrypt (too young, weaker than bcrypt <em>for password hashes</em>)</h3>
+				<h3>Your own custom solution (see <a href="http://meta.security.stackexchange.com/a/1132/9571">don't be a Dave</a> on security.SE)</h3>
+			</section>
+			<section>
+				<h2>Two-factor authentication</h2>
+				<h3>Make users prove they <em>have</em> something in addition to knowing something</h3>
+				<h3>Something they know: password</h3>
+				<h3>Something they have: phone</h3>
+			</section>
+			<section><img src="images/freeotp.png" alt="Screenshot of FreeOTP two-factor authentication app"></section>
+			<section>
+				<h2>Implementation options</h2>
+				<h3>SMS (more insecure)</h3>
+				<h3>TOTP</h3>
+			</section>
+			<section>
+				<h2>No password?</h2>
+				<h3>Consider removing passwords</h3>
+				<h3>Just use email, SMS or TOTP instead</h3>
+				<h3>Passwords are almost always the weak points (<a href="https://xkcd.com/792/">xkcd agrees</a>)</h3>
+				<h3><a href="http://passwordless.org">passwordless.org</a></h3>
+			</section>
+			<section data-bespoke-hash="csrf">
+				<h2>Cross Site Request Forgery</h2>
+				<h3><a href="https://en.wikipedia.org/wiki/Confused_Deputy">Confused deputy attack</a></h3>
+				<h3>Tricks the browser into requesting a state change</h3>
+				<h3>Relies on browsers always sending auth information</h3>
+			</section>
+			<section>
+				<h2>Trivial example</h2><code>&lt;a href="https://mybank.com/account/manage?action=changeemail&email=alex@strugee.net">Click to download PDF&lt;/a></code>
+			</section>
+			<section>
+				<h2>Prevention</h2>
+				<h3>Easiest way: verify same-origin + CSRF tokens</h3>
+				<h3>Server embeds a token in web pages when generating them</h3>
+				<h3>Requests must authenticate using that token</h3>
+				<h3>Use your framework</h3>
+				<h3><a href="https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet">Other prevention techniques</a></h3>
+			</section>
+			<section>
+				<h2>Things that do <em>not</em> prevent CSRF</h2>
+				<h3>HTTPS</h3>
+				<h3>Session ID in the URL</h3>
+				<h3>A "secret" cookie</h3>
+				<h3>Only accepting POST requests</h3>
+			</section>
+			<section data-bespoke-hash="tips">
+				<h2>Tips</h2>
+				<h3>HTTPS</h3>
+				<h3>HTTP Strict Transport Security</h3>
+				<h3>Keep stuff up-to-date</h3>
+				<h3><code>X-Frame-Options: DENY</code></h3>
+				<h3><code>X-Content-Type-Options: nosniff</code></h3>
+				<h3><code>X-Download-Options: noopen</code></h3>
+				<h3><code>X-XSS-Protection: 1; mode=block</code> (reportedly buggy sometimes? Use a UA sniffer)</h3>
+				<h3><a href="https://www.owasp.org/index.php/Main_Page">OWASP</a></h3>
+			</section>
+			<section>
+				<h2 class="bullet">Thanks!</h2>
+			</section>
+			<section>
+				<h2 class="bullet">Access this presentation again</h2>
+				<h3 class="bullet"><a href="https://strugee.net/presentation-webapp-security">https://strugee.net/presentation-webapp-security</a></h3>
+				<h3 class="bullet">Or get the <a href="https://github.com/strugee/presentation-webapp-security">source code</a></h3>
+			</section>
+		</article>
+		<script src="build/build.js"></script>
+	</body>
+</html>
