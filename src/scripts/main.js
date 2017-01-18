@@ -8,12 +8,14 @@ var hash = require('bespoke-hash');
 var prism = require('bespoke-prism');
 var multimedia = require('bespoke-multimedia');
 var extern = require('bespoke-extern');
+var cube = require('bespoke-theme-cube');
 
 // Bespoke.js
 bespoke.from({ parent: 'article.deck', slides: 'section' }, [
 	classes(),
 	nav(),
 	scale(),
+	cube(),
 	bullets('.build, .build-items > *:not(.build-items)'),
 	hash(),
 	prism(),
