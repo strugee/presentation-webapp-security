@@ -33,6 +33,7 @@
     "node": ">=0.10.0"
   },
   "dependencies": {
+    "bespoke-forms": "^1.0.0",
     "bespoke-theme-cube": "^2.0.1"
   }
 }

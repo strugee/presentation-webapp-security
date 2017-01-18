@@ -15,64 +15,184 @@ html
 				h1 Web app security
 
 			section
-				h2 Images
-				img(src="images/bespoke-logo.jpg")
+				h2 AJ
+				h3 he/him
+				h3 Winter 2 batch
+				h3 Security/privacy nerd
+
+			section(data-bespoke-hash='covering')
+				h2 What we're covering
+				h3 tl;dr: high-level vulnerabilities specific to webapps
+				ul
+					li.bullet Injection vulnerabilities
+					li.bullet XSS attacks
+					li.bullet Password mishandling
+					li.bullet Cross Site Request Forgery
+
+			section(data-bespoke-hash='not-covering')
+				h2 What we're <strong>not</strong> covering
+				ul
+					li.bullet Common sense stuff
+					li.bullet Operational security (mostly)
+					li.bullet Cryptography (mostly)
+					li.bullet Social engineering
+
+			section(data-bespoke-hash='injctions')
+				h2 Injection vulnerabilities
+				h3 Rely on injecting text with special meaning into the app
+				h3 Usual culprit: string concatenation
+				h3 Most common type: SQL injections
 
 			section
-				h2 Keyboard Interaction
-				h3 Powered by <a href="https://github.com/markdalgleish/bespoke-keys">bespoke-keys</a>
-
-			section
-				h2 Touch Interaction
-				h3 Powered by <a href="https://github.com/markdalgleish/bespoke-touch">bespoke-touch</a>
-
-			section
-				h2 Responsive Slides
-				h3 Powered by <a href="https://github.com/markdalgleish/bespoke-scale">bespoke-scale</a>
-
-			section
-				h2 Bullet List
-				h3 Powered by <a href="https://github.com/markdalgleish/bespoke-bullets">bespoke-bullets</a>
-				ul.build.build-items
-					li Bullet 1
-					li Bullet 2
-					li Bullet 3
-
-			section
-				iframe(width="640", height="360", src="https://www.youtube.com/embed/AV3kYPutYfs?rel=0&amp;showinfo=0&amp;controls=0&amp;enablejsapi=1&amp;loop=1&amp;playlist=AV3kYPutYfs", frameborder="0", allowfullscreen, data-volume="0")
-
-			section
-				h2 Syntax Highlighting
-				h3 Powered by <a href="http://twitter.com/LeaVerou">Lea Verou</a>'s <a href="https://github.com/PrismJS/prism">Prism</a>
-				pre
-					code.language-javascript.
-						(function() {
-							function hanoi(n, a, b, c) {
-								return n ? hanoi(n - 1, a, c, b)
-										.concat([[a, b]])
-										.concat(hanoi(n - 1, c, b, a)) : [];
+				h2 Trivial example
+				input#searchInput(type='search', placeholder='Search...')
+				code
+					pre.language-javascript.
+						function searchFirstNames(req, res, next) {
+							var query = "SELECT 'firstname' FROM 'users' WHERE 'username' LIKE '%";
+							query += req.params.searchQuery + '%;';
+							db.query(query , function(response) {
+								// Do something
 							}
-							return hanoi(3, 'left', 'right', 'mid')
-								.map(function(d) {
-									return d[0] + ' -> ' + d[1];
-								});
-						})();
+						}
+				h3 Database sees: 
+					code SELECT 'firstname' FROM 'users' WHERE 'username' LIKE '%#[span#queryDisplay]%'
 
-			section(data-bespoke-hash='named-route')
-				h2 Named Route
-				h3 Powered by <a href="https://github.com/markdalgleish/bespoke-hash">bespoke-hash</a>
-				p Look up! This route has been named with a <em>'data-bespoke-hash'</em> attribute.
 			section
-				h2.bullet Just the beginning…
-				br
-				ul.build.build-items
-					li Edit <a href="http://jade-lang.com/">Pug (formerly Jade)</a> markup in <em>'src/index.pug'</em>
-					li Edit <a href="http://stylus-lang.com/">Stylus</a> styles in <em>'src/styles/main.styl'</em>
-					li Edit JavaScript in <em>'src/scripts/main.js'</em>
-				br
-				ul.build
-					li
-						strong Enjoy! :)
-						a(href='http://twitter.com/markdalgleish') -@markdalgleish
+				img(src='http://imgs.xkcd.com/comics/exploits_of_a_mom.png', alt='xkcd about a SQL injection')
+				cite <a href="https://www.xkcd.com/327/">"Exploits of a Mom" by Randall Munroe; CC-BY-NC 2.5</a>
+
+			section
+				h2 Solutions
+				h3 Substitutions (use safe APIs)
+				h3 Escaping
+				h3 Frameworks don't necessarily do this for you
+
+			section(data-bespoke-hash='xss')
+				h2 XSS attacks
+				h3 XSS = Cross Site Scripting
+				h3 Relies on injecting text interpreted specially by the browser
+				h3 Almost always used to create a scripting context
+
+			section
+				h2 Trivial example
+				textarea#postCompose(placeholder='Compose post')
+				a#forgot(href='javascript:void(0);') I forgot :(
+				code
+					pre.language-javascript.
+							var postCompose = document.getElementById('postCompose'),
+							    postDisplay = document.getElementById('postDisplay'),
+							    postDisplayButton = document.getElementById('postDisplayButton');
+							
+							postDisplayButton.addEventListener('click', function(event) {
+								postDisplay.innerHTML = postCompose.value;
+							});
+				button#postDisplayButton Display post
+				#postDisplay
+
+			section
+				h2 XSS solutions
+				h3 Use an autoescaping template language
+				h3 Use an escaping library (don't do it yourself)
+				h3 Prefer well-known libraries
+				h3 If not, whitelists
+				h3 #[a(href='https://content-security-policy.com/') Content Security Policy]
+
+			section(data-bespoke-hash='passwords')
+				h2 Password mishandling
+				h3 Your password database <strong>will</strong> be compromised
+				h3 The tl;dr is: use a well-established algorithm
+				h3 We're going to talk about why anyway
+				h3 Spoiler: at the end I'll say "don't use passwords"
+
+			section
+				h2 Hashing
+				h3
+					q A hash function is any function that can be used to map data of arbitrary size to data of fixed size.
+					cite -Wikipedia
+				h3 Takes in an arbitrary amount of data
+				h3 Outputs a deterministic fixed-length string
+				h3 Changes are obvious
+				h3 Very hard to reverse
+
+			section
+				h2 Password hashing
+				h3 Hash passwords so the attacker has to guess
+				h3 Use strong hashing functions that are <em>slooooooow</em>
+				h3 That means no (plain) SHA-1, no SHA-256, no MD5, etc.
+				h3 Iteration
+
+			section
+				h2 Salts
+				h3 Plaintext values that are hashed with the password
+				h3 Salting breaks rainbow tables
+
+			section
+				h2 Just use an algorithm
+				h3 PBKDF2 (conservative, generally SHA-256, vulnerable to ASICs/GPUs)
+				h3 bcrypt (newer, Blowfish, vulnerable to FPGAs)
+				h3 Both of these take care of salting
+
+			section
+				h2 Do <em>not</em> use:
+				h3 scrypt (too young, weaker than bcrypt <em>for password hashes</em>)
+				h3 Your own custom solution (see <a href="http://meta.security.stackexchange.com/a/1132/9571">don't be a Dave</a> on security.SE)
+
+			section
+				h2 Two-factor authentication
+				h3 Make users prove they <em>have</em> something in addition to knowing something
+				h3 Something they know: password
+				h3 Something they have: phone
+
+			section
+				img(src='images/freeotp.png', alt='Screenshot of FreeOTP two-factor authentication app')
+
+			section
+				h2 Implementation options
+				h3 SMS (more insecure)
+				h3 TOTP
+
+			section
+				h2 No password?
+				h3 Consider removing passwords
+				h3 Just use email, SMS or TOTP instead
+				h3 Passwords are almost always the weak points (<a href="https://xkcd.com/792/">xkcd agrees</a>)
+				h3 #[a(href='http://passwordless.org') passwordless.org]
+
+			section(data-bespoke-hash='csrf')
+				h2 Cross Site Request Forgery
+				h3 #[a(href='https://en.wikipedia.org/wiki/Confused_Deputy') Confused deputy attack]
+				h3 Tricks the browser into requesting a state change
+				h3 Relies on browsers always sending auth information
+
+			section
+				h2 Trivial example
+				code &lt;a href="https://mybank.com/account/manage?action=changeemail&email=alex@strugee.net">Click to download PDF&lt;/a>
+
+			section
+				h2 Prevention
+				h3 Easiest way: verify same-origin + CSRF tokens
+				h3 Server embeds a token in web pages when generating them
+				h3 Requests must authenticate using that token
+				h3 Use your framework
+				h3 #[a(href='https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet') Other prevention techniques]
+
+			section
+				h2 Things that do <em>not</em> prevent CSRF
+				h3 HTTPS
+				h3 Session ID in the URL
+				h3 A "secret" cookie
+				h3 Only accepting POST requests
+
+			section(data-bespoke-hash='tips')
+				h2 Tips
+				h3 HTTPS
+				h3 HTTP Strict Transport Security
+				h3 Keep stuff up-to-date
+				h3 #[code X-Frame-Options: DENY]
+				h3 #[code X-Content-Type-Options: nosniff]
+				h3 #[code X-Download-Options: noopen]
+				h3 #[code X-XSS-Protection: 1; mode=block] (reportedly buggy sometimes? Use a UA sniffer)
+				h3 #[a(href='https://www.owasp.org/index.php/Main_Page') OWASP]
 
 		script(src='build/build.js')
